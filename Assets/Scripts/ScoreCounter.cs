@@ -1,39 +1,16 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ScoreCounter : MonoBehaviour
 {
-    private int _totalScore;
-    private Rigidbody[] _allDices;
-    [System.Serializable] private struct DiceFace
+    public void CountScore(List<Dice> allDices)
     {
-        private Vector3 _localPosition;
-        private int _value;
-    }
-    
-    private void Start()
-    {
-        _allDices = GetComponentsInChildren<Rigidbody>();
-        foreach (var dice in _allDices)
+        int currentScore = 0;
+        foreach (var dice in allDices)
         {
-            dice.isKinematic = true;
+            currentScore += dice.CurrentValue();
         }
+        
+        Debug.Log(currentScore);
     }
-
-    private bool DiceStopped()
-    {
-        foreach (var dice in _allDices )
-        {
-            if (dice.linearVelocity.magnitude > 0.05f || dice.angularVelocity.magnitude > 0.05f)
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private void CalculateTotalScore()
-    {
-
-    }
-    
 }

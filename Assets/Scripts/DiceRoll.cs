@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -10,9 +11,18 @@ public class DiceRoll : MonoBehaviour
     [SerializeField] private float _maxForce;
     [SerializeField] private float _minTorque;
     [SerializeField] private float _maxTorque;
+    [SerializeField] private ScoreCounter _scoreCounter;
+    
+    private Coroutine _activeRoutine;
+    
+    public void OnRoll(InputValue input)
+    {
+        if (_activeRoutine == null)
+            _activeRoutine = StartCoroutine(RollDicesRoutine());
+    }
     
     private void RollDices()
-    { 
+    {
         foreach (var dice in _allDices)
         {
             float randomForce = Random.Range(_minForce, _maxForce);
@@ -29,11 +39,28 @@ public class DiceRoll : MonoBehaviour
             
             dice.Roll(forceVector, torqueVector);
         }
-        
     }
 
-    public void OnRoll(InputValue input)
+    private IEnumerator RollDicesRoutine()
     {
         RollDices();
+        yield return new WaitForSeconds(0.5f);
+        yield return new WaitUntil(AreAllStopped); ;
+        _scoreCounter.CountScore(_allDices);
+        
+        _activeRoutine = null;
+    }
+    
+    private bool AreAllStopped()
+    {
+        foreach (Dice dice in _allDices)
+        {
+            if (!dice.IsStopped())
+            {
+                return false;
+            }
+        }
+        
+        return true;
     }
 }
