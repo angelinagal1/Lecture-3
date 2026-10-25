@@ -34,12 +34,12 @@ public class Dice : MonoBehaviour
 
     public int CurrentValue()
     {
-        int diceValue = 0;
-        float maxDot = -1;
+        var diceValue = 0;
+        var maxDot = -1f;
         foreach (var element in _dictValues)
         {
-            Vector3 faceVector = transform.TransformDirection(element.Key);
-            float curDot = Vector3.Dot(faceVector, Vector3.up);
+            var faceVector = transform.TransformDirection(element.Key);
+            var curDot = Vector3.Dot(faceVector, Vector3.up);
             if (curDot > maxDot)
             {
                 maxDot = curDot;

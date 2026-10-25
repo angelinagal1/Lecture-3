@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,10 +13,18 @@ public class DiceRoll : MonoBehaviour
     [SerializeField] private float _minTorque;
     [SerializeField] private float _maxTorque;
     [SerializeField] private ScoreCounter _scoreCounter;
+    [SerializeField] private Dice _dicePrefab;
+    [SerializeField] private Transform _diceSpawnPoint;
+    public int NumberOfDice { get; private set; } = 5;
     
     private Coroutine _activeRoutine;
     
     public void OnRoll(InputValue input)
+    {
+        StartRoll();
+    }
+
+    public void StartRoll()
     {
         if (_activeRoutine == null)
             _activeRoutine = StartCoroutine(RollDicesRoutine());
@@ -23,21 +32,25 @@ public class DiceRoll : MonoBehaviour
     
     private void RollDices()
     {
-        foreach (var dice in _allDices)
+        DestroyAllDice();
+        for (var i = 0; i < NumberOfDice; i++)
         {
-            float randomForce = Random.Range(_minForce, _maxForce);
-            float randomTorque = Random.Range(_minTorque, _maxTorque);
-            
-            Vector3 forceDirection = Random.onUnitSphere;
-            Vector3 torqueDirection = Random.onUnitSphere;
-            
+            var newDice = Instantiate(_dicePrefab, _diceSpawnPoint.position, _diceSpawnPoint.rotation);
+            _allDices.Add(newDice);
+        
+            var randomForce = Random.Range(_minForce, _maxForce);
+            var randomTorque = Random.Range(_minTorque, _maxTorque);
+        
+            var forceDirection = Random.onUnitSphere;
+            var torqueDirection = Random.onUnitSphere;
+        
             forceDirection.y = Mathf.Abs(forceDirection.y);
             forceDirection.z = Mathf.Abs(forceDirection.z);
-            
-            Vector3 forceVector = randomForce * forceDirection;
-            Vector3 torqueVector = randomTorque * torqueDirection;
-            
-            dice.Roll(forceVector, torqueVector);
+        
+            var forceVector = randomForce * forceDirection;
+            var torqueVector = randomTorque * torqueDirection;
+        
+            newDice.Roll(forceVector, torqueVector);
         }
     }
 
@@ -45,7 +58,7 @@ public class DiceRoll : MonoBehaviour
     {
         RollDices();
         yield return new WaitForSeconds(0.5f);
-        yield return new WaitUntil(AreAllStopped); ;
+        yield return new WaitUntil(AreAllStopped); 
         _scoreCounter.CountScore(_allDices);
         
         _activeRoutine = null;
@@ -53,7 +66,7 @@ public class DiceRoll : MonoBehaviour
     
     private bool AreAllStopped()
     {
-        foreach (Dice dice in _allDices)
+        foreach (var dice in _allDices)
         {
             if (!dice.IsStopped())
             {
@@ -62,5 +75,19 @@ public class DiceRoll : MonoBehaviour
         }
         
         return true;
+    }
+
+    public void SetNumberOfDices(string number)
+    {
+        NumberOfDice  = int.Parse(number);
+    }
+
+    private void DestroyAllDice()
+    {
+        foreach (var dice in _allDices)
+        {
+            Destroy(dice.gameObject);
+        }
+        _allDices.Clear();
     }
 }
